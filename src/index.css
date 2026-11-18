@@ -157,7 +157,7 @@ main {
   max-width: 920px;
 }
 .page-title p {
-  font-size: 20px;
+  font-size: 23px;
   line-height: 1.5;
   color: var(--muted);
   max-width: 760px;
@@ -399,7 +399,7 @@ footer button {
   font-weight: 800;
   border: 1px solid var(--line);
   border-radius: 4px;
-  padding: 9px 12px;
+  padding: 10px 14px;
   text-decoration: none;
 }
 .reading {
