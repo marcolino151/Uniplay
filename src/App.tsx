@@ -1,11 +1,14 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { registrationRepository, type Registration } from "./services/registrationRepository";
 import {
   listTornei,
   creaIscrizione,
   login as loginAdmin,
   logout as logoutAdmin,
   sessioneAttiva,
+  listIscrizioni,
+  eliminaIscrizione,
+  svuotaIscrizioni,
+  type Iscrizione,
   type Torneo,
 } from "./services/api";
 
@@ -1162,36 +1165,82 @@ function Registrations({
   go,
   onNotice,
   logout,
-  registrations,
-  setRegistrations,
 }: {
   go: (route: Route) => void;
   onNotice: (text: string) => void;
   logout: () => void;
-  registrations: Registration[];
-  setRegistrations: React.Dispatch<React.SetStateAction<Registration[]>>;
 }) {
+  const [registrations, setRegistrations] = useState<Iscrizione[]>([]);
+  const [tornei, setTornei] = useState<Torneo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("Tutti i tornei");
   const [query, setQuery] = useState("");
+
+  const reload = async () => {
+    try {
+      const [iscr, torn] = await Promise.all([listIscrizioni(), listTornei()]);
+      setRegistrations(iscr);
+      setTornei(torn);
+    } catch (err) {
+      console.error("Errore caricamento iscrizioni:", err);
+      onNotice("Impossibile caricare le iscrizioni.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    reload();
+  }, []);
+
+  const formatDate = (iso: string) => new Intl.DateTimeFormat("it-IT").format(new Date(iso));
+
   const visible = registrations.filter(
     (r) =>
-      (filter === "Tutti i tornei" || r.tournament === filter) &&
-      `${r.first} ${r.last} ${r.team} ${r.email}`.toLowerCase().includes(query.toLowerCase()),
+      (filter === "Tutti i tornei" || r.torneo_titolo === filter) &&
+      `${r.nome} ${r.cognome} ${r.squadra} ${r.email}`.toLowerCase().includes(query.toLowerCase()),
   );
-  const tournamentNames = Array.from(new Set(registrations.map((item) => item.tournament))).sort();
-  const remove = (id: number) => {
-    setRegistrations((items) => items.filter((x) => x.id !== id));
-    onNotice("Iscrizione eliminata.");
+  const tournamentNames = tornei.map((t) => t.titolo);
+  const postiTotali = tornei.reduce((sum, t) => sum + t.posti_totali, 0);
+  const prossimo = tornei.find((t) => new Date(t.data) >= new Date()) ?? tornei[0];
+
+  const remove = async (id: number) => {
+    try {
+      await eliminaIscrizione(id);
+      setRegistrations((items) => items.filter((x) => x.id !== id));
+      onNotice("Iscrizione eliminata.");
+    } catch {
+      onNotice("Errore durante l'eliminazione.");
+    }
   };
+
+  const svuota = async () => {
+    if (!window.confirm("Vuoi eliminare TUTTE le iscrizioni? L'operazione è definitiva.")) return;
+    try {
+      await svuotaIscrizioni();
+      setRegistrations([]);
+      onNotice("Tutte le iscrizioni sono state eliminate.");
+    } catch {
+      onNotice("Errore durante l'eliminazione.");
+    }
+  };
+
   const exportCsv = () => {
     const rows = [
       ["Data", "Nome", "Cognome", "Nome della squadra", "Email", "Telefono", "Torneo"],
-      ...visible.map((r) => [r.date, r.first, r.last, r.team, r.email, r.phone, r.tournament]),
+      ...visible.map((r) => [
+        formatDate(r.created_at),
+        r.nome,
+        r.cognome,
+        r.squadra,
+        r.email,
+        r.telefono,
+        r.torneo_titolo,
+      ]),
     ];
     const csv = rows
-      .map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","))
+      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
       .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -1200,6 +1249,7 @@ function Registrations({
     URL.revokeObjectURL(url);
     onNotice("File CSV esportato.");
   };
+
   return (
     <main className="admin-page">
       <AdminHeader tab="registrations" go={go} logout={logout} />
@@ -1214,13 +1264,21 @@ function Registrations({
           </article>
           <article>
             <span>Posti rimasti</span>
-            <strong>{64 - registrations.length}</strong>
-            <small>Su 64 posti totali</small>
+            <strong>{Math.max(0, postiTotali - registrations.length)}</strong>
+            <small>Su {postiTotali} posti totali</small>
           </article>
           <article>
             <span>Prossimo torneo</span>
-            <b>Torneo di Calcetto</b>
-            <small>28 novembre 2026 · 18:00</small>
+            <b>{prossimo?.titolo ?? "—"}</b>
+            <small>
+              {prossimo
+                ? new Date(prossimo.data).toLocaleDateString("it-IT", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : ""}
+            </small>
           </article>
         </div>
         <div className="admin-tools">
@@ -1242,7 +1300,7 @@ function Registrations({
           />
           <ActionButton onClick={exportCsv}>↓ &nbsp; Esporta CSV</ActionButton>
         </div>
-        <p className="count">{visible.length} iscrizioni · Salvate in questo browser</p>
+        <p className="count">{loading ? "Caricamento…" : `${visible.length} iscrizioni`}</p>
         <div className="registration-table">
           <div className="table-head">
             <span>Data iscrizione</span>
@@ -1256,42 +1314,36 @@ function Registrations({
           </div>
           {visible.map((r) => (
             <article key={r.id}>
-              <span className="date">{r.date}</span>
+              <span className="date">{formatDate(r.created_at)}</span>
               <b>
-                {r.first} {r.last}
+                {r.nome} {r.cognome}
               </b>
-              <span className="first">{r.first}</span>
-              <span className="last">{r.last}</span>
+              <span className="first">{r.nome}</span>
+              <span className="last">{r.cognome}</span>
               <span className="team">
                 <span className="mobile-only">Nome della squadra: </span>
-                {r.team || "—"}
+                {r.squadra || "—"}
               </span>
               <span>{r.email}</span>
-              <span>{r.phone}</span>
-              <em>{r.tournament}</em>
+              <span>{r.telefono}</span>
+              <em>{r.torneo_titolo}</em>
               <button
                 onClick={() => remove(r.id)}
-                aria-label={`Elimina iscrizione di ${r.first} ${r.last}`}
+                aria-label={`Elimina iscrizione di ${r.nome} ${r.cognome}`}
               >
                 <img src={`${A}/ee049.svg`} alt="" />
               </button>
             </article>
           ))}
         </div>
-        {visible.length === 0 && (
-          <div className="empty">Nessuna iscrizione corrisponde alla ricerca.</div>
+        {!loading && visible.length === 0 && (
+          <div className="empty">Nessuna iscrizione trovata.</div>
         )}
         <div className="danger-zone">
-          <ActionButton
-            variant="danger"
-            onClick={() => {
-              setRegistrations([]);
-              onNotice("Tutte le iscrizioni sono state eliminate.");
-            }}
-          >
+          <ActionButton variant="danger" onClick={svuota}>
             Svuota tutte le iscrizioni
           </ActionButton>
-          <span>Eliminazione definitiva dei dati salvati nel browser.</span>
+          <span>Eliminazione definitiva delle iscrizioni dal database.</span>
         </div>
       </section>
       <div className="admin-footer">Uniplay Milano · Gestione community</div>
@@ -1428,13 +1480,7 @@ export default function App() {
   useEffect(() => {
     sessioneAttiva().then(setAuthenticated);
   }, []);
-  const [registrations, setRegistrations] = useState(() =>
-    registrationRepository.list(initialRegistrations),
-  );
   const [tournaments, setTournaments] = useState(initialTournaments);
-  useEffect(() => {
-    registrationRepository.save(registrations);
-  }, [registrations]);
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(""), 3500);
@@ -1468,23 +1514,13 @@ export default function App() {
         );
       case "login":
         return authenticated ? (
-          <Registrations
-            {...common}
-            logout={logout}
-            registrations={registrations}
-            setRegistrations={setRegistrations}
-          />
+          <Registrations {...common} logout={logout} />
         ) : (
           <Login {...common} onLogin={() => setAuthenticated(true)} />
         );
       case "registrations":
         return (
-          <Registrations
-            {...common}
-            logout={logout}
-            registrations={registrations}
-            setRegistrations={setRegistrations}
-          />
+          <Registrations {...common} logout={logout} />
         );
       case "tournaments":
         return (
@@ -1498,7 +1534,7 @@ export default function App() {
       default:
         return <Home {...common} />;
     }
-  }, [route, tournamentSlug, authenticated, registrations, tournaments]);
+  }, [route, tournamentSlug, authenticated, tournaments]);
   return (
     <>
       {page}
