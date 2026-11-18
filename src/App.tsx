@@ -407,17 +407,17 @@ function Home({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: s
             {[
               [
                 "“Quand je suis arrivé à Milan, je ne connaissais personne. Grâce à Uniplay, j'ai pu continuer à jouer et me faire de nouveaux amis.”",
-                "Leonard Renzulli",
+                "Matteo Rossi",
                 "775d9.webp",
               ],
               [
                 "“Tornei aperti a tutti, competizione coinvolgente grazie all’organizzazione e all’ambiente curato.”",
-                "Lisa Maiocchi",
+                "Giulia Bianchi",
                 "16a84.webp",
               ],
               [
                 "“Thanks to Uniplay, I got back into sports after starting university and found an amazing group of friends.”",
-                "Andrea Bouvais",
+                "Luca Colombo",
                 "fbb3f.webp",
               ],
             ].map(([quote, name, avatar]) => (
