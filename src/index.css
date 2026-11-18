@@ -395,10 +395,11 @@ footer button {
 }
 .socials a {
   color: #222;
-  font-size: 11px;
+  font-size: 20px;
+  font-weight: 800;
   border: 1px solid var(--line);
   border-radius: 4px;
-  padding: 6px;
+  padding: 9px 12px;
   text-decoration: none;
 }
 .reading {
