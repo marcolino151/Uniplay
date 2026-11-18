@@ -149,7 +149,7 @@ function Header({ go }: { go: (route: Route) => void }) {
   return (
     <header className="site-header">
       <button className="wordmark" onClick={() => navigate("home")}>
-        UNIPLAY MILANO
+        <img src="/favicon.png" alt="UniPlay Milano" />
       </button>
       <button
         className="menu-toggle"

@@ -92,6 +92,17 @@
   letter-spacing: 0.01em;
   padding: 8px 0;
 }
+.site-header .wordmark {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+.site-header .wordmark img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
 .site-header nav {
   display: flex;
   gap: 34px;
