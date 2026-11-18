@@ -533,7 +533,7 @@ function Events({
   onNotice: (text: string) => void;
 }) {
   const sports = [
-    ["Beachvolley", "Summer tournaments and social matches on sand", "972ff.webp", "beach-volley"],
+    ["Beachvolley", "tournaments and social matches on sand", "972ff.webp", "beach-volley"],
     [
       "Football (x5 & x8)",
       "University leagues from 5-to-8-a-side matches",
@@ -545,9 +545,17 @@ function Events({
     ["Running Club", "Weekly group runs around Milano’s best parks", "91068.webp", "running"],
     ["Social Events", "Meet, share, and connect during community nights", "bed86.webp", "social"],
   ] as const;
-  const days = Array.from({ length: 35 }, (_, i) =>
-    i < 2 ? "" : i - 1 <= 30 ? String(i - 1) : "",
-  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const calendarCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+  const days = Array.from({ length: calendarCells }, (_, i) => {
+    const day = i - firstWeekday + 1;
+    return day < 1 || day > daysInMonth ? null : day;
+  });
   return (
     <PageShell go={go} onNotice={onNotice}>
       <main>
@@ -558,13 +566,12 @@ function Events({
             <small>Saturday 20/06</small>
             <h3>Sign Up Your Team</h3>
             <p>
-              Get ready for the ultimate summer clash sponsored by Red Bull, where music, energy,
+              Get ready for the next tournament sponsored by Red Bull, where music, energy,
               and fierce university competition meet on the sand.
             </p>
             <ul>
               <li>DJ set all afternoon</li>
               <li>Free Red Bull</li>
-              <li>Surprise prizes</li>
             </ul>
             <ActionButton
               variant="gold"
@@ -591,7 +598,9 @@ function Events({
           </div>
         </section>
         <section className="calendar content-section">
-          <h2>September | 2026</h2>
+          <h2>
+            {today.toLocaleDateString("en-US", { month: "long" })} | {year}
+          </h2>
           <div className="weekdays">
             {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(
               (x) => (
@@ -600,15 +609,29 @@ function Events({
             )}
           </div>
           <div className="days">
-            {days.map((day, i) => (
-              <button
-                key={i}
-                disabled={!day}
-                onClick={() => onNotice(`Hai selezionato il ${day} settembre 2026.`)}
-              >
-                {day}
-              </button>
-            ))}
+            {days.map((day, i) => {
+              const date = day ? new Date(year, month, day) : null;
+              const passed = date !== null && date < today;
+              const isToday = date !== null && date.getTime() === today.getTime();
+              return (
+                <button
+                  key={i}
+                  disabled={!day || passed}
+                  className={passed ? "past-day" : isToday ? "current-day" : ""}
+                  aria-label={date?.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                  onClick={() =>
+                    date && onNotice(`Hai selezionato il ${date.toLocaleDateString("it-IT")}.`)
+                  }
+                >
+                  {day}
+                </button>
+              );
+            })}
           </div>
         </section>
         <section className="league-promo">

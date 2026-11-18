@@ -526,6 +526,16 @@ footer button {
 .days button:not(:disabled):hover {
   background: #faf1c7;
 }
+.days button.past-day {
+  color: #a0a0a0;
+  background: #f5f5f5;
+  text-decoration: line-through;
+  cursor: default;
+}
+.days button.current-day {
+  background: #f5c542;
+  font-weight: 700;
+}
 .league-promo {
   padding-top: 60px;
   padding-bottom: 60px;
