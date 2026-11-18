@@ -8,6 +8,8 @@ import {
   listIscrizioni,
   eliminaIscrizione,
   svuotaIscrizioni,
+  salvaTorneo,
+  creaTorneo,
   type Iscrizione,
   type Torneo,
 } from "./services/api";
@@ -27,15 +29,6 @@ type NavigationParams = {
   tournament?: string;
 };
 
-type Tournament = {
-  id: number;
-  title: string;
-  date: string;
-  place: string;
-  price: string;
-  total: number;
-  occupied: number;
-};
 
 const A = "/assets";
 const routes = new Set<Route>([
@@ -93,118 +86,8 @@ const tournamentCatalog = {
   },
 } as const;
 
-const initialRegistrations: Registration[] = [
-  {
-    id: 1,
-    date: "16/11/2026",
-    first: "Giulia",
-    last: "Rossi",
-    email: "giulia.rossi@studenti.unimi.it",
-    phone: "333 214 5678",
-    team: "",
-    tournament: "Torneo di Calcetto",
-  },
-  {
-    id: 2,
-    date: "16/11/2026",
-    first: "Luca",
-    last: "Bianchi",
-    email: "luca.bianchi@studenti.unimi.it",
-    phone: "347 802 1936",
-    team: "",
-    tournament: "Basket 3×3",
-  },
-  {
-    id: 3,
-    date: "15/11/2026",
-    first: "Sofia",
-    last: "Colombo",
-    email: "sofia.colombo@studenti.unimi.it",
-    phone: "339 156 4207",
-    team: "",
-    tournament: "Beach Volley",
-  },
-  {
-    id: 4,
-    date: "15/11/2026",
-    first: "Marco",
-    last: "Ferrari",
-    email: "marco.ferrari@studenti.unimi.it",
-    phone: "328 670 9154",
-    team: "",
-    tournament: "Torneo di Calcetto",
-  },
-  {
-    id: 5,
-    date: "14/11/2026",
-    first: "Anna",
-    last: "Romano",
-    email: "anna.romano@studenti.unimi.it",
-    phone: "340 521 8863",
-    team: "",
-    tournament: "Basket 3×3",
-  },
-  {
-    id: 6,
-    date: "14/11/2026",
-    first: "Davide",
-    last: "Ricci",
-    email: "davide.ricci@studenti.unimi.it",
-    phone: "334 769 2015",
-    team: "",
-    tournament: "Beach Volley",
-  },
-  {
-    id: 7,
-    date: "13/11/2026",
-    first: "Chiara",
-    last: "Moretti",
-    email: "chiara.moretti@studenti.unimi.it",
-    phone: "349 403 6728",
-    team: "",
-    tournament: "Torneo di Calcetto",
-  },
-  {
-    id: 8,
-    date: "13/11/2026",
-    first: "Matteo",
-    last: "Conti",
-    email: "matteo.conti@studenti.unimi.it",
-    phone: "338 915 3042",
-    team: "",
-    tournament: "Basket 3×3",
-  },
-];
 
-const initialTournaments: Tournament[] = [
-  {
-    id: 1,
-    title: "Torneo di Calcetto",
-    date: "2026-11-28",
-    place: "Centro sportivo CUS Milano",
-    price: "15,00",
-    total: 24,
-    occupied: 3,
-  },
-  {
-    id: 2,
-    title: "Basket 3×3",
-    date: "2026-12-05",
-    place: "PalaCUS · Città Studi",
-    price: "10,00",
-    total: 16,
-    occupied: 3,
-  },
-  {
-    id: 3,
-    title: "Beach Volley",
-    date: "2026-12-12",
-    place: "Beach Milano · Segrate",
-    price: "12,00",
-    total: 24,
-    occupied: 2,
-  },
-];
+
 
 function useRoute() {
   const readLocation = () => {
@@ -935,6 +818,7 @@ function RegistrationPage({
         cognome: form.last.trim(),
         email: form.email.trim(),
         telefono: form.phone.trim(),
+        squadra: form.squadra.trim(),
       });
       setForm({ first: "", last: "", squadra: "", phone: "", email: "", privacy: false });
       onNotice("Iscrizione registrata! Ti porto al pagamento…");
@@ -1238,7 +1122,7 @@ function Registrations({
       ]),
     ];
     const csv = rows
-      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
       .join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -1353,27 +1237,44 @@ function Registrations({
 
 function TournamentCard({
   tournament,
-  update,
+  onSaved,
   onNotice,
 }: {
-  tournament: Tournament;
-  update: (next: Tournament) => void;
+  tournament: Torneo;
+  onSaved: () => void;
   onNotice: (text: string) => void;
 }) {
   const [draft, setDraft] = useState(tournament);
-  const save = (event: FormEvent) => {
+  const [saving, setSaving] = useState(false);
+  const save = async (event: FormEvent) => {
     event.preventDefault();
-    update(draft);
-    onNotice("Torneo aggiornato con successo.");
+    setSaving(true);
+    try {
+      await salvaTorneo({
+        id: draft.id,
+        titolo: draft.titolo,
+        data: draft.data,
+        luogo: draft.luogo,
+        quota: Number(String(draft.quota).replace(",", ".")),
+        posti_totali: draft.posti_totali,
+      });
+      onNotice("Torneo aggiornato con successo.");
+      onSaved();
+    } catch (err) {
+      console.error("Errore salvataggio torneo:", err);
+      onNotice("Errore nel salvataggio del torneo.");
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <form className="tournament-card" onSubmit={save}>
-      <h2>{draft.title}</h2>
+      <h2>{draft.titolo}</h2>
       <label>
         Titolo
         <input
-          value={draft.title}
-          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+          value={draft.titolo}
+          onChange={(e) => setDraft({ ...draft, titolo: e.target.value })}
           required
         />
       </label>
@@ -1381,16 +1282,16 @@ function TournamentCard({
         Data
         <input
           type="date"
-          value={draft.date}
-          onChange={(e) => setDraft({ ...draft, date: e.target.value })}
+          value={draft.data}
+          onChange={(e) => setDraft({ ...draft, data: e.target.value })}
           required
         />
       </label>
       <label>
         Luogo
         <input
-          value={draft.place}
-          onChange={(e) => setDraft({ ...draft, place: e.target.value })}
+          value={draft.luogo}
+          onChange={(e) => setDraft({ ...draft, luogo: e.target.value })}
           required
         />
       </label>
@@ -1398,8 +1299,8 @@ function TournamentCard({
         <label>
           Quota (€)
           <input
-            value={draft.price}
-            onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+            value={String(draft.quota)}
+            onChange={(e) => setDraft({ ...draft, quota: e.target.value as unknown as number })}
             required
           />
         </label>
@@ -1407,20 +1308,24 @@ function TournamentCard({
           Posti totali
           <input
             type="number"
-            min={draft.occupied}
-            value={draft.total}
-            onChange={(e) => setDraft({ ...draft, total: Number(e.target.value) })}
+            min={draft.occupati}
+            value={draft.posti_totali}
+            onChange={(e) => setDraft({ ...draft, posti_totali: Number(e.target.value) })}
             required
           />
         </label>
       </div>
       <span className="occupancy">
-        Posti occupati: {draft.occupied} / {draft.total}
+        Posti occupati: {draft.occupati} / {draft.posti_totali}
       </span>
       <div className="progress">
-        <i style={{ width: `${Math.min(100, (draft.occupied / draft.total) * 100)}%` }} />
+        <i
+          style={{
+            width: `${Math.min(100, draft.posti_totali ? (draft.occupati / draft.posti_totali) * 100 : 0)}%`,
+          }}
+        />
       </div>
-      <ActionButton type="submit">Salva modifiche</ActionButton>
+      <ActionButton type="submit">{saving ? "Salvataggio…" : "Salva modifiche"}</ActionButton>
     </form>
   );
 }
@@ -1429,30 +1334,35 @@ function Tournaments({
   go,
   onNotice,
   logout,
-  tournaments,
-  setTournaments,
 }: {
   go: (route: Route) => void;
   onNotice: (text: string) => void;
   logout: () => void;
-  tournaments: Tournament[];
-  setTournaments: React.Dispatch<React.SetStateAction<Tournament[]>>;
 }) {
-  const add = () => {
-    const next = {
-      id: Date.now(),
-      title: "Nuovo torneo",
-      date: "2026-12-19",
-      place: "Milano",
-      price: "10,00",
-      total: 16,
-      occupied: 0,
-    };
-    setTournaments((items) => [...items, next]);
-    onNotice("Nuovo torneo aggiunto. Completa i dettagli e salva.");
+  const [tornei, setTornei] = useState<Torneo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const reload = async () => {
+    try {
+      setTornei(await listTornei());
+    } catch (err) {
+      console.error("Errore caricamento tornei:", err);
+      onNotice("Impossibile caricare i tornei.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const update = (next: Tournament) =>
-    setTournaments((items) => items.map((x) => (x.id === next.id ? next : x)));
+  useEffect(() => {
+    reload();
+  }, []);
+  const add = async () => {
+    try {
+      await creaTorneo();
+      onNotice("Nuovo torneo aggiunto. Completa i dettagli e salva.");
+      reload();
+    } catch {
+      onNotice("Errore nella creazione del torneo.");
+    }
+  };
   return (
     <main className="admin-page">
       <AdminHeader tab="tournaments" go={go} logout={logout} />
@@ -1462,9 +1372,15 @@ function Tournaments({
         <ActionButton className="add-tournament" onClick={add}>
           ＋ &nbsp; Aggiungi torneo
         </ActionButton>
+        {loading && <p className="count">Caricamento…</p>}
         <div className="tournament-grid">
-          {tournaments.map((t) => (
-            <TournamentCard key={t.id} tournament={t} update={update} onNotice={onNotice} />
+          {tornei.map((t) => (
+            <TournamentCard
+              key={`${t.id}-${t.titolo}-${t.data}-${t.quota}-${t.posti_totali}`}
+              tournament={t}
+              onSaved={reload}
+              onNotice={onNotice}
+            />
           ))}
         </div>
       </section>
@@ -1480,7 +1396,6 @@ export default function App() {
   useEffect(() => {
     sessioneAttiva().then(setAuthenticated);
   }, []);
-  const [tournaments, setTournaments] = useState(initialTournaments);
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(""), 3500);
@@ -1524,17 +1439,12 @@ export default function App() {
         );
       case "tournaments":
         return (
-          <Tournaments
-            {...common}
-            logout={logout}
-            tournaments={tournaments}
-            setTournaments={setTournaments}
-          />
+          <Tournaments {...common} logout={logout} />
         );
       default:
         return <Home {...common} />;
     }
-  }, [route, tournamentSlug, authenticated, tournaments]);
+  }, [route, tournamentSlug, authenticated,]);
   return (
     <>
       {page}
