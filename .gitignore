@@ -1,0 +1,32 @@
+# Segreti e variabili d'ambiente
+.env
+.env.*
+!.env.example
+
+# Dipendenze
+node_modules/
+
+# Build e cache
+dist/
+build/
+.next/
+.vercel/
+.netlify/
+.cache/
+.parcel-cache/
+
+# Log
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# File di test e chiavi
+*.pem
+*.key
