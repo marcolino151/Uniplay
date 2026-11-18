@@ -256,8 +256,7 @@ function Footer({
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
-            className="text-2xl font-bold hover:opacity-80 transition-opacity"
-          >
+            className="text-5xl font-extrabold hover:scale-110 transition-transform"          >
             IG
           </a>
           <a
@@ -265,7 +264,7 @@ function Footer({
             target="_blank"
             rel="noreferrer"
             aria-label="WhatsApp"
-            className="text-2xl font-bold hover:opacity-80 transition-opacity"
+            className="text-5xl font-extrabold hover:scale-110 transition-transform"
           >
             WA
           </a>
