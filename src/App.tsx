@@ -227,7 +227,7 @@ function Newsletter({
         <div className="form-buttons">
           <ActionButton type="submit">Message Us</ActionButton>
           <ActionButton
-            onClick={() => window.open("https://www.instagram.com/uniplay_league/", "_blank")}
+            onClick={() => window.open("https://www.instagram.com/uniplay_milano/", "_blank")}
           >
             Official Instagram
           </ActionButton>
@@ -252,7 +252,7 @@ function Footer({
         </button>
         <div className="socials">
           <a
-            href="https://www.instagram.com/uniplay_league/"
+            href="https://www.instagram.com/uniplay_milano/"
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
