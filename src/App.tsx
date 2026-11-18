@@ -10,6 +10,7 @@ import {
   svuotaIscrizioni,
   salvaTorneo,
   creaTorneo,
+  eliminaTorneo,
   type Iscrizione,
   type Torneo,
 } from "./services/api";
@@ -17,6 +18,7 @@ import {
 type Route =
   | "home"
   | "about"
+  | "privacy"
   | "events"
   | "league"
   | "contact"
@@ -34,6 +36,7 @@ const A = "/assets";
 const routes = new Set<Route>([
   "home",
   "about",
+  "privacy",
   "events",
   "league",
   "contact",
@@ -293,9 +296,7 @@ function Footer({
       <div>
         <strong>Legal & Support</strong>
         <button
-          onClick={() =>
-            onNotice("Privacy Policy: i dati inseriti in questa demo restano nel browser.")
-          }
+          onClick={() => go("privacy")}
         >
           Privacy Policy
         </button>
@@ -525,6 +526,93 @@ function About({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: 
   );
 }
 
+function PrivacyPage({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: string) => void }) {
+  return (
+    <PageShell go={go} onNotice={onNotice}>
+      <main>
+        <section className="page-title privacy-title">
+          <h1>Privacy Notice on the Processing of Personal Data</h1>
+          <p>(pursuant to Articles 13 and 14 of EU Regulation 2016/679 – GDPR)</p>
+        </section>
+        <article className="reading privacy-policy">
+          <section>
+            <h2>1. Data Controller</h2>
+            <p>
+              The data controller is Uniplay, an amateur sports association based at Università
+              Cattolica.
+            </p>
+            <p>
+              For any requests, you can email <a href="mailto:uniplay.milano@gmail.com">uniplay.milano@gmail.com</a>.
+            </p>
+          </section>
+          <section>
+            <h2>2. Data We Collect</h2>
+            <p>
+              We collect the information you enter in the registration form: first name, last name,
+              email address, phone number, and selected event.
+            </p>
+          </section>
+          <section>
+            <h2>3. Purposes and Legal Bases</h2>
+            <p>We process your data to:</p>
+            <ul>
+              <li>
+                manage your tournament registration and related communications, including sending
+                a confirmation email (legal basis: performance of a contract and pre-contractual
+                measures, Article 6(1)(b) GDPR);
+              </li>
+              <li>comply with legal, administrative, and tax obligations (Article 6(1)(c) GDPR);</li>
+              <li>protect our rights in the event of a dispute (Article 6(1)(f) GDPR).</li>
+            </ul>
+          </section>
+          <section>
+            <h2>4. Payments</h2>
+            <p>
+              Payments are made through an external platform. Uniplay does not collect or store
+              your card or account details. These are processed directly by the payment service
+              provider in accordance with its privacy notice.
+            </p>
+          </section>
+          <section>
+            <h2>5. Data Recipients</h2>
+            <p>
+              Your data may be processed by service providers that help us manage the website,
+              database, and email delivery, acting as data processors, and by the payment platform
+              provider. Your data is not made public or sold to third parties.
+            </p>
+          </section>
+          <section>
+            <h2>6. Data Retention</h2>
+            <p>
+              We retain your data for as long as necessary to manage your registration and the
+              event, and afterwards for up to 24 months, or longer where required by law. After
+              that period, the data is deleted or anonymized.
+            </p>
+          </section>
+          <section>
+            <h2>7. Your Rights</h2>
+            <p>
+              You may request access to your data, its rectification or erasure, restriction of
+              processing, data portability, or object to processing at any time by emailing{" "}
+              <a href="mailto:uniplay.milano@gmail.com">uniplay.milano@gmail.com</a>. You also
+              have the right to lodge a complaint with the Italian Data Protection
+              Authority (<a href="https://www.garanteprivacy.it" target="_blank" rel="noreferrer">www.garanteprivacy.it</a>).
+            </p>
+          </section>
+          <section>
+            <h2>8. Is Providing Data Mandatory?</h2>
+            <p>
+              Providing your data is necessary to complete your registration. Without it, you
+              cannot participate in the tournament.
+            </p>
+          </section>
+          <p className="privacy-updated"><em>Last updated: November 18, 2026</em></p>
+        </article>
+      </main>
+    </PageShell>
+  );
+}
+
 function Events({
   go,
   onNotice,
@@ -634,36 +722,44 @@ function Events({
                 (event) => event.data.slice(0, 10) === dateKey,
               );
               return (
-                <button
+                <div
                   key={i}
-                  disabled={!day || passed}
-                  className={`${passed ? "past-day" : isToday ? "current-day" : ""}${eventsOnDay.length ? " has-event" : ""}`}
-                  aria-label={
-                    date
-                      ? `${date.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })}${eventsOnDay.length ? `: ${eventsOnDay.map((event) => event.titolo).join(", ")}` : ""}`
-                      : undefined
-                  }
-                  onClick={() =>
-                    date &&
-                    onNotice(
-                      eventsOnDay.length
-                        ? `${date.toLocaleDateString("it-IT")}: ${eventsOnDay.map((event) => event.titolo).join(", ")}`
-                        : `Hai selezionato il ${date.toLocaleDateString("it-IT")}.`,
-                    )
-                  }
+                  className={`calendar-day${passed ? " past-day" : isToday ? " current-day" : ""}${eventsOnDay.length ? " has-event" : ""}`}
                 >
-                  <span>{day}</span>
+                  {day ? (
+                    <button
+                      type="button"
+                      className="calendar-date"
+                      disabled={passed}
+                      aria-label={date?.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                      onClick={() =>
+                        date &&
+                        (eventsOnDay.length === 1
+                          ? go("register", { tournament: eventsOnDay[0].slug })
+                          : onNotice(
+                              `Hai selezionato il ${date.toLocaleDateString("it-IT")}.`,
+                            ))
+                      }
+                    >
+                      {day}
+                    </button>
+                  ) : null}
                   {eventsOnDay.map((event) => (
-                    <small className="calendar-event" key={event.id} title={event.titolo}>
+                    <a
+                      href={`#/register?tournament=${encodeURIComponent(event.slug)}`}
+                      className="calendar-event"
+                      key={event.id}
+                      title={`Apri ${event.titolo}`}
+                    >
                       {event.titolo}
-                    </small>
+                    </a>
                   ))}
-                </button>
+                </div>
               );
             })}
           </div>
@@ -832,8 +928,13 @@ function RegistrationPage({
   onNotice: (text: string) => void;
   tournamentSlug: string;
 }) {
-  const slug = tournamentSlug in tournamentCatalog ? tournamentSlug : "beach-volley";
-  const tournament = tournamentCatalog[slug as keyof typeof tournamentCatalog];
+  const slug = tournamentSlug || "beach-volley";
+  const tournament =
+    tournamentCatalog[slug as keyof typeof tournamentCatalog] ?? {
+      title: "Evento UniPlay",
+      image: "aac36.webp",
+      description: "Evento UniPlay",
+    };
   const [torneo, setTorneo] = useState<Torneo | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -875,7 +976,7 @@ function RegistrationPage({
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (!torneo || pieno) return;
-    if (!form.privacy) return onNotice("Devi accettare l'informativa privacy per continuare.");
+    if (!form.privacy) return onNotice("Please accept the privacy notice to continue.");
     setSending(true);
     try {
       await creaIscrizione({
@@ -992,8 +1093,11 @@ function RegistrationPage({
                     required
                   />
                   <span>
-                    Ho letto e accetto l'informativa privacy e acconsento al trattamento dei miei
-                    dati per la gestione dell'iscrizione.
+                    I have read and accept the{" "}
+                    <a className="privacy-inline-link" href="#/privacy">
+                      Privacy Notice
+                    </a>{" "}
+                    and consent to the processing of my data to manage my registration.
                   </span>
                 </label>
                 <ActionButton type="submit" className="full-field">
@@ -1312,6 +1416,7 @@ function TournamentCard({
 }) {
   const [draft, setDraft] = useState(tournament);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const save = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
@@ -1331,6 +1436,20 @@ function TournamentCard({
       onNotice("Errore nel salvataggio del torneo.");
     } finally {
       setSaving(false);
+    }
+  };
+  const remove = async () => {
+    if (!window.confirm(`Vuoi eliminare l'evento "${draft.titolo}"?`)) return;
+    setDeleting(true);
+    try {
+      await eliminaTorneo(draft.id);
+      onNotice("Evento eliminato.");
+      onSaved();
+    } catch (err) {
+      console.error("Errore eliminazione evento:", err);
+      onNotice("Impossibile eliminare l'evento. Potrebbe avere iscrizioni associate.");
+    } finally {
+      setDeleting(false);
     }
   };
   return (
@@ -1392,6 +1511,9 @@ function TournamentCard({
         />
       </div>
       <ActionButton type="submit">{saving ? "Salvataggio…" : "Salva modifiche"}</ActionButton>
+      <ActionButton variant="danger" onClick={remove}>
+        {deleting ? "Eliminazione…" : "Elimina evento"}
+      </ActionButton>
     </form>
   );
 }
@@ -1480,6 +1602,8 @@ export default function App() {
     switch (route) {
       case "about":
         return <About {...common} />;
+      case "privacy":
+        return <PrivacyPage {...common} />;
       case "events":
         return <Events {...common} />;
       case "league":

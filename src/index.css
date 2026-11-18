@@ -456,6 +456,41 @@ footer button {
   line-height: 1.7;
   margin-bottom: 20px;
 }
+.privacy-title h1 {
+  font-size: clamp(32px, 4vw, 48px);
+}
+.privacy-title p {
+  font-size: 16px;
+}
+.privacy-policy section {
+  margin-bottom: 28px;
+}
+.privacy-policy h2 {
+  margin-bottom: 10px;
+  font-family: "Inter:Semi Bold";
+  font-size: 22px;
+}
+.privacy-policy p,
+.privacy-policy li {
+  font-size: 16px;
+  line-height: 1.7;
+}
+.privacy-policy ul {
+  padding-left: 24px;
+  margin: 10px 0 0;
+}
+.privacy-policy li + li {
+  margin-top: 8px;
+}
+.privacy-policy a,
+.privacy-inline-link {
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.privacy-updated {
+  margin-top: 38px;
+}
 .two-images {
   max-width: 1030px;
   margin: 50px auto;
@@ -515,39 +550,56 @@ footer button {
   padding: 14px;
   font-size: 12px;
 }
-.days button {
+.calendar-day {
   border: 1px solid var(--line);
   border-width: 1px 1px 0 0;
   min-height: 92px;
-  text-align: left;
   padding: 14px;
   background: #fff;
 }
-.days button:not(:disabled):hover {
-  background: #faf1c7;
+.calendar-date {
+  display: block;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.days button.past-day {
+.calendar-day.past-day {
   color: #a0a0a0;
   background: #f5f5f5;
+}
+.calendar-day.past-day .calendar-date {
   text-decoration: line-through;
   cursor: default;
 }
-.days button.current-day {
+.calendar-day.current-day {
   background: #f5c542;
   font-weight: 700;
 }
-.days button.has-event {
+.calendar-day.has-event {
   border-bottom: 3px solid var(--green);
 }
 .calendar-event {
   display: block;
+  width: 100%;
   margin-top: 6px;
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: var(--green);
   font-size: 10px;
   font-weight: 700;
   line-height: 1.25;
+  text-align: left;
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+.calendar-event:hover {
+  text-decoration: underline;
 }
 .league-promo {
   padding-top: 60px;
@@ -1135,7 +1187,7 @@ footer button {
     padding: 7px 2px;
     overflow: hidden;
   }
-  .days button {
+  .calendar-day {
     min-height: 55px;
     padding: 7px;
   }

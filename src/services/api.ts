@@ -73,6 +73,11 @@ export async function salvaTorneo(
   if (error) throw error;
 }
 
+export async function eliminaTorneo(id: number) {
+  const { error } = await supabase.from("tornei").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function creaTorneo() {
   const { error } = await supabase.from("tornei").insert({
     slug: `torneo-${Date.now()}`,
