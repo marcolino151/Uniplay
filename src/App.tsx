@@ -532,6 +532,20 @@ function Events({
   go: (route: Route, params?: NavigationParams) => void;
   onNotice: (text: string) => void;
 }) {
+  const [calendarTournaments, setCalendarTournaments] = useState<Torneo[]>([]);
+  useEffect(() => {
+    let active = true;
+    listTornei()
+      .then((items) => {
+        if (active) setCalendarTournaments(items);
+      })
+      .catch((error) => {
+        console.error("Errore caricamento eventi calendario:", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
   const sports = [
     ["Beachvolley", "tournaments and social matches on sand", "972ff.webp", "beach-volley"],
     [
@@ -613,22 +627,42 @@ function Events({
               const date = day ? new Date(year, month, day) : null;
               const passed = date !== null && date < today;
               const isToday = date !== null && date.getTime() === today.getTime();
+              const dateKey = date
+                ? `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+                : "";
+              const eventsOnDay = calendarTournaments.filter(
+                (event) => event.data.slice(0, 10) === dateKey,
+              );
               return (
                 <button
                   key={i}
                   disabled={!day || passed}
-                  className={passed ? "past-day" : isToday ? "current-day" : ""}
-                  aria-label={date?.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  className={`${passed ? "past-day" : isToday ? "current-day" : ""}${eventsOnDay.length ? " has-event" : ""}`}
+                  aria-label={
+                    date
+                      ? `${date.toLocaleDateString("en-US", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })}${eventsOnDay.length ? `: ${eventsOnDay.map((event) => event.titolo).join(", ")}` : ""}`
+                      : undefined
+                  }
                   onClick={() =>
-                    date && onNotice(`Hai selezionato il ${date.toLocaleDateString("it-IT")}.`)
+                    date &&
+                    onNotice(
+                      eventsOnDay.length
+                        ? `${date.toLocaleDateString("it-IT")}: ${eventsOnDay.map((event) => event.titolo).join(", ")}`
+                        : `Hai selezionato il ${date.toLocaleDateString("it-IT")}.`,
+                    )
                   }
                 >
-                  {day}
+                  <span>{day}</span>
+                  {eventsOnDay.map((event) => (
+                    <small className="calendar-event" key={event.id} title={event.titolo}>
+                      {event.titolo}
+                    </small>
+                  ))}
                 </button>
               );
             })}

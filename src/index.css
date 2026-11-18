@@ -536,6 +536,19 @@ footer button {
   background: #f5c542;
   font-weight: 700;
 }
+.days button.has-event {
+  border-bottom: 3px solid var(--green);
+}
+.calendar-event {
+  display: block;
+  margin-top: 6px;
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .league-promo {
   padding-top: 60px;
   padding-bottom: 60px;
@@ -1125,6 +1138,10 @@ footer button {
   .days button {
     min-height: 55px;
     padding: 7px;
+  }
+  .calendar-event {
+    font-size: 8px;
+    margin-top: 3px;
   }
   .league-promo .button {
     min-width: 0;
