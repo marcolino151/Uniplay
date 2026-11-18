@@ -33,19 +33,20 @@ export type NuovaIscrizione = {
 /* ---------- Tornei ---------- */
 
 export async function listTornei(): Promise<Torneo[]> {
-  const [tornei, occupati] = await Promise.all([
-    supabase.from("tornei").select("*").order("data"),
-    supabase.rpc("posti_occupati"),
-  ]);
+  const tornei = await supabase
+    .from("tornei")
+    .select("id, slug, titolo, data, luogo, quota, posti_totali")
+    .order("data");
   if (tornei.error) throw tornei.error;
-  if (occupati.error) throw occupati.error;
 
-  const mappa = new Map<number, number>(
-    (occupati.data ?? []).map((o: { torneo_id: number; occupati: number }) => [
-      Number(o.torneo_id),
-      Number(o.occupati),
-    ]),
-  );
+  // I posti occupati sono facoltativi: se la funzione non risponde, si usa 0
+  const occupati = await supabase.rpc("posti_occupati");
+  const mappa = new Map<number, number>();
+  if (!occupati.error) {
+    for (const o of occupati.data ?? []) {
+      mappa.set(Number(o.torneo_id), Number(o.occupati));
+    }
+  }
 
   return (tornei.data ?? []).map((t) => ({
     ...t,

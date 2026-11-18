@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { registrationRepository, type Registration } from "./services/registrationRepository";
+import { listTornei, creaIscrizione, type Torneo } from "./services/api";
 
 type Route =
   | "home"
@@ -860,46 +861,79 @@ function Contact({
   );
 }
 
+
+const PAYMENT_URL = "https://example.com/pagamento"; // SEGNAPOSTO: sostituire con il link reale
+
 function RegistrationPage({
   go,
   onNotice,
   tournamentSlug,
-  setRegistrations,
 }: {
   go: (route: Route) => void;
   onNotice: (text: string) => void;
   tournamentSlug: string;
-  setRegistrations: React.Dispatch<React.SetStateAction<Registration[]>>;
 }) {
-  const tournament =
-    tournamentCatalog[tournamentSlug as keyof typeof tournamentCatalog] ||
-    tournamentCatalog["beach-volley"];
+  const slug = tournamentSlug in tournamentCatalog ? tournamentSlug : "beach-volley";
+  const tournament = tournamentCatalog[slug as keyof typeof tournamentCatalog];
+  const [torneo, setTorneo] = useState<Torneo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const [form, setForm] = useState({
     first: "",
     last: "",
-    team: "",
+    squadra: "",
     phone: "",
     email: "",
+    privacy: false,
   });
 
-  const update = (field: keyof typeof form, value: string) =>
+    useEffect(() => {
+    let active = true;
+    setLoading(true);
+    listTornei()
+      .then((list) => {
+        console.log("Tornei ricevuti:", list);
+        if (active) setTorneo(list.find((t) => t.slug === slug) ?? null);
+      })
+      .catch((err) => {
+        console.error("Errore caricamento tornei:", err);
+        if (active) onNotice("Impossibile caricare i dati del torneo. Riprova più tardi.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+  
+  const update = (field: "first" | "last" | "squadra" | "phone" | "email", value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
 
-  const submit = (event: FormEvent) => {
+  const postiLiberi = torneo ? torneo.posti_totali - torneo.occupati : 0;
+  const pieno = !!torneo && postiLiberi <= 0;
+
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const registration: Registration = {
-      id: Date.now(),
-      date: new Intl.DateTimeFormat("it-IT").format(new Date()),
-      first: form.first.trim(),
-      last: form.last.trim(),
-      team: form.team.trim(),
-      phone: form.phone.trim(),
-      email: form.email.trim(),
-      tournament: tournament.title,
-    };
-    setRegistrations((current) => [...current, registration]);
-    setForm({ first: "", last: "", team: "", phone: "", email: "" });
-    onNotice(`Iscrizione salvata per ${tournament.title}.`);
+    if (!torneo || pieno) return;
+    if (!form.privacy) return onNotice("Devi accettare l'informativa privacy per continuare.");
+    setSending(true);
+    try {
+      await creaIscrizione({
+        torneo_id: torneo.id,
+        nome: form.first.trim(),
+        cognome: form.last.trim(),
+        email: form.email.trim(),
+        telefono: form.phone.trim(),
+      });
+      setForm({ first: "", last: "", squadra: "", phone: "", email: "", privacy: false });
+      onNotice("Iscrizione registrata! Ti porto al pagamento…");
+      window.setTimeout(() => window.location.assign(PAYMENT_URL), 1200);
+    } catch {
+      onNotice("Errore nel salvataggio dell'iscrizione. Riprova.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -909,79 +943,118 @@ function RegistrationPage({
           <img src={`${A}/${tournament.image}`} alt={tournament.description} />
         </div>
         <section className="registration-section">
-          <p className="registration-context">Stai iscrivendo la squadra a</p>
-          <h1>{tournament.title}</h1>
-          <p className="registration-intro">
-            Compila tutti i campi. Il torneo viene riconosciuto automaticamente dalla pagina di
-            provenienza.
-          </p>
-          <form className="registration-form" onSubmit={submit}>
-            <label>
-              Nome
-              <input
-                value={form.first}
-                onChange={(event) => update("first", event.target.value)}
-                placeholder="Jane"
-                autoComplete="given-name"
-                required
-              />
-            </label>
-            <label>
-              Cognome
-              <input
-                value={form.last}
-                onChange={(event) => update("last", event.target.value)}
-                placeholder="Rossi"
-                autoComplete="family-name"
-                required
-              />
-            </label>
-            <label>
-              Nome della squadra
-              <input
-                value={form.team}
-                onChange={(event) => update("team", event.target.value)}
-                placeholder="Uniplay Team"
-                autoComplete="organization"
-                required
-              />
-            </label>
-            <label>
-              Numero di telefono
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(event) => update("phone", event.target.value)}
-                placeholder="+39 333 123 4567"
-                autoComplete="tel"
-                required
-              />
-            </label>
-            <label className="full-field">
-              Indirizzo email
-              <input
-                type="email"
-                value={form.email}
-                onChange={(event) => update("email", event.target.value)}
-                placeholder="nome@universita.it"
-                autoComplete="email"
-                required
-              />
-            </label>
-            <ActionButton type="submit" className="full-field">
-              INVIA ISCRIZIONE
-            </ActionButton>
-          </form>
-          <small className="storage-note">
-            In questa versione esportabile i dati vengono salvati nel browser. Potrai collegare il
-            repository a un database quando realizzerai il backend.
-          </small>
+          <p className="registration-context">Ti stai iscrivendo a</p>
+          <h1>{torneo?.titolo ?? tournament.title}</h1>
+
+          {loading && <p className="registration-intro">Caricamento…</p>}
+
+          {!loading && !torneo && (
+            <p className="registration-intro">
+              Le iscrizioni per questo evento non sono ancora aperte. Torna a trovarci presto!
+            </p>
+          )}
+
+          {torneo && (
+            <>
+              <p className="registration-intro">
+                {new Date(torneo.data).toLocaleDateString("it-IT", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+                · {torneo.luogo} ·{" "}
+                {torneo.quota.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}
+                <br />
+                {pieno ? "Posti esauriti" : `Posti disponibili: ${postiLiberi}`}
+              </p>
+              <form className="registration-form" onSubmit={submit}>
+                <label>
+                  Nome
+                  <input
+                    value={form.first}
+                    onChange={(e) => update("first", e.target.value)}
+                    placeholder="Giulia"
+                    autoComplete="given-name"
+                    required
+                  />
+                </label>
+                <label>
+                  Cognome
+                  <input
+                    value={form.last}
+                    onChange={(e) => update("last", e.target.value)}
+                    placeholder="Rossi"
+                    autoComplete="family-name"
+                    required
+                  />
+                </label>
+                <label>
+                  Nome della squadra
+                  <input
+                    value={form.squadra}
+                    onChange={(e) => update("squadra", e.target.value)}
+                    placeholder="Uniplay Team"
+                    autoComplete="organization"
+                    required
+                  />
+                </label>
+                <label>
+                  Numero di telefono
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => update("phone", e.target.value)}
+                    placeholder="+39 333 123 4567"
+                    autoComplete="tel"
+                    required
+                  />
+                </label>
+                <label>
+                  Indirizzo email
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => update("email", e.target.value)}
+                    placeholder="nome@universita.it"
+                    autoComplete="email"
+                    required
+                  />
+                </label>
+                <label
+                  className="full-field"
+                  style={{ display: "flex", gap: "0.6rem", alignItems: "flex-start" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.privacy}
+                    onChange={(e) => setForm((c) => ({ ...c, privacy: e.target.checked }))}
+                    style={{ width: "auto", marginTop: "0.25rem" }}
+                    required
+                  />
+                  <span>
+                    Ho letto e accetto l'informativa privacy e acconsento al trattamento dei miei
+                    dati per la gestione dell'iscrizione.
+                  </span>
+                </label>
+                <ActionButton type="submit" className="full-field">
+                  {pieno
+                    ? "POSTI ESAURITI"
+                    : sending
+                      ? "INVIO IN CORSO…"
+                      : "CONFERMA E VAI AL PAGAMENTO"}
+                </ActionButton>
+              </form>
+              <small className="storage-note">
+                Dopo la conferma verrai indirizzato alla piattaforma di pagamento esterna per
+                versare la quota di iscrizione.
+              </small>
+            </>
+          )}
         </section>
       </main>
     </PageShell>
   );
 }
-
 function Login({
   go,
   onNotice,
@@ -1364,7 +1437,6 @@ export default function App() {
           <RegistrationPage
             {...common}
             tournamentSlug={tournamentSlug}
-            setRegistrations={setRegistrations}
           />
         );
       case "login":
