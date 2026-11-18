@@ -46,42 +46,42 @@ const routes = new Set<Route>([
 const tournamentCatalog = {
   "beach-volley": {
     title: "Beach Volley",
-    image: "aac36.png",
+    image: "aac36.webp",
     description: "Torneo di beach volley UniPlay",
   },
   football: {
     title: "Torneo di Calcetto",
-    image: "40a00.png",
+    image: "40a00.webp",
     description: "Torneo di calcetto UniPlay",
   },
   "basket-3x3": {
     title: "Basket 3×3",
-    image: "fc7f7.png",
+    image: "fc7f7.webp",
     description: "Torneo universitario di basket 3×3",
   },
   padel: {
     title: "Padel",
-    image: "3eed5.png",
+    image: "3eed5.webp",
     description: "Torneo di padel UniPlay",
   },
   tennis: {
     title: "Tennis",
-    image: "46a80.png",
+    image: "46a80.webp",
     description: "Torneo di tennis UniPlay",
   },
   running: {
     title: "Running Club",
-    image: "91068.png",
+    image: "91068.webp",
     description: "Evento Running Club UniPlay",
   },
   social: {
     title: "Social Event",
-    image: "bed86.png",
+    image: "bed86.webp",
     description: "Evento sociale UniPlay",
   },
   league: {
     title: "Uniplay League",
-    image: "0eefc.png",
+    image: "0eefc.webp",
     description: "Campionato universitario Uniplay League",
   },
 } as const;
@@ -173,7 +173,7 @@ function Header({ go }: { go: (route: Route) => void }) {
           onClick={() => navigate("login")}
           aria-label="Area riservata"
         >
-          <img src={`${A}/d81de.svg`} alt="" />
+          <img loading="lazy" decoding="async" src={`${A}/d81de.svg`} alt="" />
         </button>
       </nav>
     </header>
@@ -324,19 +324,19 @@ function Home({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: s
     [
       "Student Events",
       "Where student-led events are designed by students for students with the purpose of having fun, meeting new people, and building lasting connections.",
-      "35e9d.png",
+      "35e9d.webp",
       "events",
     ],
     [
       "Sports & Tournaments",
       "Join our tennis, padel, football, and beachvolley tournaments, discover our sports events, or challenge yourself and meet new people.",
-      "69571.png",
+      "69571.webp",
       "events",
     ],
     [
       "Social Events",
       "Our community doesn't stop when you leave the pitch. Go from standard matches to cheering at the stadium, hanging out at the bar, and discovering niche sports.",
-      "bcec3.png",
+      "bcec3.webp",
       "league",
     ],
   ] as const;
@@ -355,14 +355,14 @@ function Home({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: s
           onClick={() => go("events")}
           aria-label="Scopri gli eventi"
         >
-          <img src={`${A}/1fc3f.png`} alt="Partita di beach volley UniPlay" />
+          <img loading="lazy" decoding="async" src={`${A}/1fc3f.webp`} alt="Partita di beach volley UniPlay" />
         </button>
         <section className="content-section">
           <h2>DISCOVER THE UNIPLAY EXPERIENCE</h2>
           <div className="three-grid">
             {experiences.map(([title, text, image, route]) => (
               <button className="image-card" key={title} onClick={() => go(route)}>
-                <img src={`${A}/${image}`} alt="" />
+                <img loading="lazy" decoding="async" src={`${A}/${image}`} alt="" />
                 <h3>{title}</h3>
                 <p>{text}</p>
               </button>
@@ -398,7 +398,7 @@ function Home({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: s
               <ActionButton onClick={() => go("about")}>Learn More</ActionButton>
             </div>
           </div>
-          <img src={`${A}/63348.png`} alt="La community UniPlay a un evento" />
+          <img loading="lazy" decoding="async" src={`${A}/63348.webp`} alt="La community UniPlay a un evento" />
         </section>
         <section className="content-section testimonials">
           <h2>WHAT STUDENTS ARE SAYING</h2>
@@ -407,23 +407,23 @@ function Home({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: s
               [
                 "“Quand je suis arrivé à Milan, je ne connaissais personne. Grâce à Uniplay, j'ai pu continuer à jouer et me faire de nouveaux amis.”",
                 "Leonard Renzulli",
-                "775d9.png",
+                "775d9.webp",
               ],
               [
                 "“Tornei aperti a tutti, competizione coinvolgente grazie all’organizzazione e all’ambiente curato.”",
                 "Lisa Maiocchi",
-                "16a84.png",
+                "16a84.webp",
               ],
               [
                 "“Thanks to Uniplay, I got back into sports after starting university and found an amazing group of friends.”",
                 "Andrea Bouvais",
-                "fbb3f.png",
+                "fbb3f.webp",
               ],
             ].map(([quote, name, avatar]) => (
               <article className="quote" key={name}>
                 <p>{quote}</p>
                 <div>
-                  <img src={`${A}/${avatar}`} alt="" />
+                  <img loading="lazy" decoding="async" src={`${A}/${avatar}`} alt="" />
                   <small>
                     <strong>{name}</strong>
                     <br />
@@ -456,7 +456,7 @@ function About({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: 
           </p>
         </section>
         <div className="wide-image about-hero">
-          <img src={`${A}/40a00.png`} alt="Studenti durante una partita di calcio" />
+          <img loading="lazy" decoding="async" src={`${A}/40a00.webp`} alt="Studenti durante una partita di calcio" />
         </div>
         <section className="reading">
           <p>
@@ -480,8 +480,8 @@ function About({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: 
           </p>
         </section>
         <section className="two-images">
-          <img src={`${A}/249aa.png`} alt="Squadra UniPlay" />
-          <img src={`${A}/f2c6f.png`} alt="Studenti in palestra" />
+          <img loading="lazy" decoding="async" src={`${A}/249aa.webp`} alt="Squadra UniPlay" />
+          <img loading="lazy" decoding="async" src={`${A}/f2c6f.webp`} alt="Studenti in palestra" />
         </section>
         <section className="reading">
           <p>
@@ -499,12 +499,12 @@ function About({ go, onNotice }: { go: (route: Route) => void; onNotice: (text: 
           <h2>Explore Our Universe</h2>
           <div className="three-grid">
             {[
-              ["Upcoming Events", "ee075.png", "events"],
-              ["Running Club", "91068.png", "events"],
-              ["Uniplay League", "2c05d.png", "league"],
+              ["Upcoming Events", "ee075.webp", "events"],
+              ["Running Club", "91068.webp", "events"],
+              ["Uniplay League", "2c05d.webp", "league"],
             ].map(([title, image, route]) => (
               <button className="image-card" onClick={() => go(route as Route)} key={title}>
-                <img src={`${A}/${image}`} alt="" />
+                <img loading="lazy" decoding="async" src={`${A}/${image}`} alt="" />
                 <h3>{title}</h3>
               </button>
             ))}
@@ -524,17 +524,17 @@ function Events({
   onNotice: (text: string) => void;
 }) {
   const sports = [
-    ["Beachvolley", "Summer tournaments and social matches on sand", "972ff.png", "beach-volley"],
+    ["Beachvolley", "Summer tournaments and social matches on sand", "972ff.webp", "beach-volley"],
     [
       "Football (x5 & x8)",
       "University leagues from 5-to-8-a-side matches",
-      "fc7f7.png",
+      "fc7f7.webp",
       "football",
     ],
-    ["Padel", "Fast-paced padel tournaments for all levels", "3eed5.png", "padel"],
-    ["Tennis", "Singles championships and friendly ladders", "46a80.png", "tennis"],
-    ["Running Club", "Weekly group runs around Milano’s best parks", "91068.png", "running"],
-    ["Social Events", "Meet, share, and connect during community nights", "bed86.png", "social"],
+    ["Padel", "Fast-paced padel tournaments for all levels", "3eed5.webp", "padel"],
+    ["Tennis", "Singles championships and friendly ladders", "46a80.webp", "tennis"],
+    ["Running Club", "Weekly group runs around Milano’s best parks", "91068.webp", "running"],
+    ["Social Events", "Meet, share, and connect during community nights", "bed86.webp", "social"],
   ] as const;
   const days = Array.from({ length: 35 }, (_, i) =>
     i < 2 ? "" : i - 1 <= 30 ? String(i - 1) : "",
@@ -543,7 +543,7 @@ function Events({
     <PageShell go={go} onNotice={onNotice}>
       <main>
         <section className="event-hero split">
-          <img src={`${A}/aac36.png`} alt="DJ al beach volley UniPlay" />
+          <img loading="lazy" decoding="async" src={`${A}/aac36.webp`} alt="DJ al beach volley UniPlay" />
           <div>
             <h1>Uniplay Beach Volley Event</h1>
             <small>Saturday 20/06</small>
@@ -574,7 +574,7 @@ function Events({
                 key={title}
                 onClick={() => go("register", { tournament })}
               >
-                <img src={`${A}/${image}`} alt="" />
+                <img loading="lazy" decoding="async" src={`${A}/${image}`} alt="" />
                 <h3>{title}</h3>
                 <p>{text}</p>
               </button>
@@ -627,7 +627,7 @@ function League({
     <PageShell go={go} onNotice={onNotice}>
       <main>
         <section className="league-hero">
-          <img src={`${A}/0eefc.png`} alt="Squadra UniPlay festeggia la vittoria" />
+          <img loading="lazy" decoding="async" src={`${A}/0eefc.webp`} alt="Squadra UniPlay festeggia la vittoria" />
           <div>
             <h1>UNIPLAY LEAGUE</h1>
             <p>
@@ -650,7 +650,7 @@ function League({
               </p>
               <ActionButton onClick={() => go("events")}>See events</ActionButton>
             </div>
-            <img src={`${A}/9a71d.png`} alt="Partita di calcio UniPlay" />
+            <img loading="lazy" decoding="async" src={`${A}/9a71d.webp`} alt="Partita di calcio UniPlay" />
           </div>
           <div className="split reverse">
             <div>
@@ -662,14 +662,14 @@ function League({
               </p>
               <ActionButton onClick={() => go("contact")}>Contact us</ActionButton>
             </div>
-            <img src={`${A}/48033.png`} alt="Studenti durante una partita" />
+            <img loading="lazy" decoding="async" src={`${A}/48033.webp`} alt="Studenti durante una partita" />
           </div>
         </section>
         <section className="content-section">
           <h2>2026 - Championship Highlights</h2>
           <div className="highlights">
             <article>
-              <img src={`${A}/999f7.png`} alt="Squadra vincitrice" />
+              <img loading="lazy" decoding="async" src={`${A}/999f7.webp`} alt="Squadra vincitrice" />
               <h3>The Final Trophy</h3>
               <p>
                 The ultimate glory has been claimed by DISSIDENTI FROGHELLI, who dominated the 2026
@@ -678,12 +678,12 @@ function League({
             </article>
             <div>
               <article>
-                <img src={`${A}/cfbb3.png`} alt="Secondi classificati" />
+                <img loading="lazy" decoding="async" src={`${A}/cfbb3.webp`} alt="Secondi classificati" />
                 <h3>Runners-Up: WOND7RS</h3>
                 <p>An incredible run, wrapping up a solid season.</p>
               </article>
               <article>
-                <img src={`${A}/cf37b.png`} alt="Miglior giocatore" />
+                <img loading="lazy" decoding="async" src={`${A}/cf37b.webp`} alt="Miglior giocatore" />
                 <h3>Final MVP</h3>
                 <p>Honoring the absolute best player of the final match.</p>
               </article>
@@ -746,7 +746,7 @@ function Contact({
               <ActionButton type="submit">SUBMIT</ActionButton>
             </form>
           </div>
-          <img src={`${A}/9a71d.png`} alt="Studenti giocano a calcio" />
+          <img loading="lazy" decoding="async" src={`${A}/9a71d.webp`} alt="Studenti giocano a calcio" />
         </section>
         <Newsletter title="NEED MORE INFORMATION?" onNotice={onNotice} />
       </main>
@@ -834,7 +834,7 @@ function RegistrationPage({
     <PageShell go={go} onNotice={onNotice}>
       <main className="registration-page">
         <div className="registration-hero">
-          <img src={`${A}/${tournament.image}`} alt={tournament.description} />
+          <img loading="lazy" decoding="async" src={`${A}/${tournament.image}`} alt={tournament.description} />
         </div>
         <section className="registration-section">
           <p className="registration-context">Ti stai iscrivendo a</p>
@@ -1215,7 +1215,7 @@ function Registrations({
                 onClick={() => remove(r.id)}
                 aria-label={`Elimina iscrizione di ${r.nome} ${r.cognome}`}
               >
-                <img src={`${A}/ee049.svg`} alt="" />
+                <img loading="lazy" decoding="async" src={`${A}/ee049.svg`} alt="" />
               </button>
             </article>
           ))}
