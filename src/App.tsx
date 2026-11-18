@@ -1,6 +1,13 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { registrationRepository, type Registration } from "./services/registrationRepository";
-import { listTornei, creaIscrizione, type Torneo } from "./services/api";
+import {
+  listTornei,
+  creaIscrizione,
+  login as loginAdmin,
+  logout as logoutAdmin,
+  sessioneAttiva,
+  type Torneo,
+} from "./services/api";
 
 type Route =
   | "home"
@@ -1064,13 +1071,21 @@ function Login({
   onNotice: (text: string) => void;
   onLogin: () => void;
 }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const submit = (event: FormEvent) => {
+  const [sending, setSending] = useState(false);
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!password.trim()) return onNotice("Inserisci la password per continuare.");
-    sessionStorage.setItem("uniplay-auth", "true");
-    onLogin();
-    go("registrations");
+    setSending(true);
+    try {
+      await loginAdmin(email.trim(), password);
+      onLogin();
+      go("registrations");
+    } catch {
+      onNotice("Email o password non corrette.");
+    } finally {
+      setSending(false);
+    }
   };
   return (
     <main className="login-page">
@@ -1080,6 +1095,17 @@ function Login({
         </button>
         <h1>Area Riservata</h1>
         <p>La tua community, dietro le quinte.</p>
+        <label>
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="la-tua-email@esempio.it"
+            autoComplete="username"
+            required
+          />
+        </label>
         <label>
           Password
           <input
@@ -1091,7 +1117,7 @@ function Login({
             required
           />
         </label>
-        <ActionButton type="submit">Accedi</ActionButton>
+        <ActionButton type="submit">{sending ? "Accesso…" : "Accedi"}</ActionButton>
         <small>Accesso riservato al team Uniplay Milano.</small>
       </form>
       <div className="login-footer">UNIPLAY MILANO · AREA RISERVATA</div>
@@ -1398,9 +1424,10 @@ function Tournaments({
 export default function App() {
   const { route, tournamentSlug, go } = useRoute();
   const [notice, setNotice] = useState("");
-  const [authenticated, setAuthenticated] = useState(
-    () => sessionStorage.getItem("uniplay-auth") === "true",
-  );
+  const [authenticated, setAuthenticated] = useState(false);
+  useEffect(() => {
+    sessioneAttiva().then(setAuthenticated);
+  }, []);
   const [registrations, setRegistrations] = useState(() =>
     registrationRepository.list(initialRegistrations),
   );
@@ -1413,8 +1440,8 @@ export default function App() {
     const timeout = window.setTimeout(() => setNotice(""), 3500);
     return () => window.clearTimeout(timeout);
   }, [notice]);
-  const logout = () => {
-    sessionStorage.removeItem("uniplay-auth");
+  const logout = async () => {
+    await logoutAdmin();
     setAuthenticated(false);
     go("login");
     setNotice("Sessione terminata.");
