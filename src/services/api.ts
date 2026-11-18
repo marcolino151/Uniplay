@@ -17,6 +17,7 @@ export type Iscrizione = {
   torneo_id: number;
   nome: string;
   cognome: string;
+  squadra: string;
   email: string;
   telefono: string;
   torneo_titolo: string;
@@ -26,6 +27,7 @@ export type NuovaIscrizione = {
   torneo_id: number;
   nome: string;
   cognome: string;
+  squadra: string;
   email: string;
   telefono: string;
 };
@@ -40,7 +42,7 @@ export async function listTornei(): Promise<Torneo[]> {
   if (tornei.error) throw tornei.error;
 
   // I posti occupati sono facoltativi: se la funzione non risponde, si usa 0
-  const occupati = await supabase.rpc("posti_occupati");
+  const occupati = await supabase.from("posti_occupati_view").select("torneo_id, occupati");
   const mappa = new Map<number, number>();
   if (!occupati.error) {
     for (const o of occupati.data ?? []) {
@@ -104,6 +106,7 @@ export async function listIscrizioni(): Promise<Iscrizione[]> {
     torneo_id: r.torneo_id,
     nome: r.nome,
     cognome: r.cognome,
+    squadra: r.squadra ?? "",
     email: r.email,
     telefono: r.telefono,
     torneo_titolo: r.tornei?.titolo ?? "—",
