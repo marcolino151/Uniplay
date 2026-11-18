@@ -248,7 +248,7 @@ function Footer({
     <footer>
       <div className="footer-brand">
         <button className="wordmark" onClick={() => go("home")}>
-          UNIPLAY MILANO
+          <img src="/favicon.png" alt="UniPlay Milano" />
         </button>
         <div className="socials">
           <a
@@ -256,17 +256,25 @@ function Footer({
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
-            className="text-5xl font-extrabold hover:scale-110 transition-transform"          >
-            IG
+            className="social-icon-link"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle className="instagram-dot" cx="17.5" cy="6.5" r="1" />
+            </svg>
           </a>
           <a
             href="https://chat.whatsapp.com/JzonM5rYLPp0zJgIJr01ro"
             target="_blank"
             rel="noreferrer"
             aria-label="WhatsApp"
-            className="text-5xl font-extrabold hover:scale-110 transition-transform"
+            className="social-icon-link"
           >
-            WA
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.5-5A8.4 8.4 0 1 1 20.5 11.7Z" />
+              <path d="M9 8.2c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.7c.1.2 0 .4-.1.6l-.5.6c-.2.2-.2.4 0 .6.4.7 1 1.3 1.7 1.7.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.6.8c.3.1.4.3.4.5 0 .4-.2 1.2-.8 1.6-.5.4-1.2.6-1.8.4-1-.2-2.1-.7-3.4-1.8-1.1-.9-1.9-2.1-2.2-3-.3-.8 0-1.7.4-2.2.2-.3.5-.5.7-.5Z" />
+            </svg>
           </a>
         </div>
       </div>
@@ -979,7 +987,7 @@ function Login({
     <main className="login-page">
       <form className="login-card" onSubmit={submit}>
         <button className="wordmark" type="button" onClick={() => go("home")}>
-          UNIPLAY MILANO
+          <img src="/favicon.png" alt="UniPlay Milano" />
         </button>
         <h1>Area Riservata</h1>
         <p>La tua community, dietro le quinte.</p>
